@@ -516,7 +516,7 @@ async function doChangePassword(){
   finally{ btn.disabled=false; btn.innerHTML='<i class="ti ti-check"></i> Simpan Password Baru'; }
 }
 
-function _startAppReal(){
+async function _startAppReal(){
   document.getElementById('loginPage').style.display='none';
   document.getElementById('appPage').style.display='block';
   document.getElementById('topUser').innerHTML=`<span class="pill ${SEKSI_PILLS[currentUser.seksi]||'pill-admin'}" style="margin-right:6px">${currentUser.seksi}</span>${currentUser.username}`;
