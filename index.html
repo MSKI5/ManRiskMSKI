@@ -98,6 +98,7 @@ textarea{resize:vertical;min-height:68px;line-height:1.5}
 
 /* ===== SCORE ===== */
 .score{padding:4px 12px;border-radius:7px;font-weight:700;font-size:13px;display:inline-block;min-width:44px;text-align:center}
+.s-blue{background:#dbeafe;color:#1e3a8a}
 .s-low{background:#dcfce7;color:#166534}
 .s-med{background:#fef9c3;color:#854d0e}
 .s-high{background:#ffedd5;color:#9a3412}
@@ -169,9 +170,36 @@ textarea{resize:vertical;min-height:68px;line-height:1.5}
 .section-row:last-child{border:none}
 .info-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:11px 14px;font-size:13px;color:#1e40af;margin-bottom:16px;display:flex;gap:8px}
 .warn-box{background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:11px 14px;font-size:13px;color:#92400e;margin-bottom:16px;display:flex;gap:8px}
+/* ===== CHANGE PASSWORD MODAL ===== */
+.chpw-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:600;display:none;align-items:center;justify-content:center;padding:20px}
+.chpw-overlay.show{display:flex}
+.chpw-box{background:#fff;border-radius:16px;padding:36px;max-width:420px;width:100%}
+.chpw-title{font-size:17px;font-weight:700;color:var(--blue);margin-bottom:6px}
+.chpw-sub{font-size:13px;color:var(--gray);margin-bottom:24px;line-height:1.5}
 </style>
 </head>
 <body>
+
+<!-- CHANGE PASSWORD MODAL -->
+<div class="chpw-overlay" id="chpwModal">
+  <div class="chpw-box">
+    <div class="login-badge" style="margin-bottom:16px"><i class="ti ti-lock-password"></i></div>
+    <div class="chpw-title">Perbarui Password Anda</div>
+    <div class="chpw-sub">Untuk keamanan akun, Anda wajib mengganti password sebelum melanjutkan.</div>
+    <div class="login-err" id="chpwErr"></div>
+    <div class="form-group">
+      <label>Password Baru <span class="req">*</span></label>
+      <input type="password" id="chpwNew" placeholder="Minimal 6 karakter">
+    </div>
+    <div class="form-group">
+      <label>Konfirmasi Password Baru <span class="req">*</span></label>
+      <input type="password" id="chpwConfirm" placeholder="Ulangi password baru">
+    </div>
+    <button class="btn btn-primary" onclick="doChangePassword()" id="btnChpw">
+      <i class="ti ti-check"></i> Simpan Password Baru
+    </button>
+  </div>
+</div>
 
 <!-- ===== LOGIN PAGE ===== -->
 <div id="loginPage">
@@ -193,15 +221,6 @@ textarea{resize:vertical;min-height:68px;line-height:1.5}
     <button class="btn btn-primary" onclick="doLogin()" id="btnLogin">
       <i class="ti ti-login"></i> Masuk
     </button>
-    <div class="user-list">
-      <h4>Akun Default</h4>
-      <div class="user-row"><span><strong>admin</strong></span><span style="color:#6b7280">ADMIN2026</span></div>
-      <div class="user-row"><span><strong>mski</strong></span><span style="color:#6b7280">MSKI2026</span></div>
-      <div class="user-row"><span><strong>bank</strong></span><span style="color:#6b7280">BANK2026</span></div>
-      <div class="user-row"><span><strong>pd</strong></span><span style="color:#6b7280">PD2026</span></div>
-      <div class="user-row"><span><strong>vera</strong></span><span style="color:#6b7280">VERA2026</span></div>
-      <div class="user-row"><span><strong>umum</strong></span><span style="color:#6b7280">UMUM2026</span></div>
-    </div>
   </div>
 </div>
 
@@ -305,15 +324,16 @@ textarea{resize:vertical;min-height:68px;line-height:1.5}
                 <th style="background:#f3f4f6;border:1px solid var(--border);padding:8px 10px;text-align:center;font-size:11px;font-weight:600;color:#374151">2 — Minor</th>
                 <th style="background:#f3f4f6;border:1px solid var(--border);padding:8px 10px;text-align:center;font-size:11px;font-weight:600;color:#374151">3 — Moderat</th>
                 <th style="background:#f3f4f6;border:1px solid var(--border);padding:8px 10px;text-align:center;font-size:11px;font-weight:600;color:#374151">4 — Signifikan</th>
-                <th style="background:#f3f4f6;border:1px solid var(--border);padding:8px 10px;text-align:center;font-size:11px;font-weight:600;color:#374151">5 — Katastrofik</th>
+                <th style="background:#f3f4f6;border:1px solid var(--border);padding:8px 10px;text-align:center;font-size:11px;font-weight:600;color:#374151">5 — Sangat Signifikan</th>
               </tr></thead>
               <tbody id="matrixBody"></tbody>
             </table>
           </div>
           <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:12px">
-            <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:#dcfce7;display:inline-block"></span><b style="color:#166534">1–8 Rendah</b></span>
-            <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:#fef9c3;display:inline-block"></span><b style="color:#854d0e">9–14 Sedang</b></span>
-            <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:#ffedd5;display:inline-block"></span><b style="color:#9a3412">15–19 Tinggi</b></span>
+            <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:#dbeafe;display:inline-block"></span><b style="color:#1e3a8a">1–5 Sangat Rendah</b></span>
+            <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:#dcfce7;display:inline-block"></span><b style="color:#166534">6–11 Rendah</b></span>
+            <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:#fef9c3;display:inline-block"></span><b style="color:#854d0e">12–15 Sedang</b></span>
+            <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:#ffedd5;display:inline-block"></span><b style="color:#9a3412">16–19 Tinggi</b></span>
             <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:#fee2e2;display:inline-block"></span><b style="color:#991b1b">20–25 Sangat Tinggi</b></span>
           </div>
         </div>
@@ -350,6 +370,10 @@ textarea{resize:vertical;min-height:68px;line-height:1.5}
           <div class="card-header"><span class="card-title"><i class="ti ti-settings"></i> Kelola Status Kuartal</span></div>
           <p style="font-size:13px;color:var(--gray);margin-bottom:16px">Buka kuartal untuk mengizinkan seksi mengisi data. Tutup kuartal setelah pengisian selesai.</p>
           <div class="q-status-grid" id="qStatusGrid"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title"><i class="ti ti-users"></i> Status Pengisian per Seksi</span></div>
+          <div id="seksiDetail"></div>
         </div>
         <div class="card">
           <div class="card-header"><span class="card-title"><i class="ti ti-history"></i> Log Aktivitas Terbaru</span></div>
@@ -412,10 +436,19 @@ let allEntries = [];
 let trendInst = null, distInst = null;
 
 // ===== UTILS =====
-function sc(s){ if(!s)return ''; if(s<=8)return 's-low'; if(s<=14)return 's-med'; if(s<=19)return 's-high'; return 's-vhigh'; }
-function sl(s){ if(!s)return '—'; if(s<=8)return 'Rendah'; if(s<=14)return 'Sedang'; if(s<=19)return 'Tinggi'; return 'Sangat Tinggi'; }
-function mc(v){ if(v<=8)return 'background:#dcfce7;color:#166534'; if(v<=14)return 'background:#fef9c3;color:#854d0e'; if(v<=19)return 'background:#ffedd5;color:#9a3412'; return 'background:#fee2e2;color:#991b1b'; }
-function scoreOf(f,d){ return f&&d ? parseInt(f)*parseInt(d) : null; }
+// Matriks risiko kustom (frekuensi=baris 1-5, dampak=kolom 1-5)
+const RISK_MATRIX = {
+  '1-1':1,  '1-2':3,  '1-3':5,  '1-4':8,  '1-5':20,
+  '2-1':2,  '2-2':7,  '2-3':11, '2-4':13, '2-5':21,
+  '3-1':4,  '3-2':10, '3-3':14, '3-4':17, '3-5':22,
+  '4-1':6,  '4-2':12, '4-3':16, '4-4':19, '4-5':24,
+  '5-1':9,  '5-2':15, '5-3':18, '5-4':23, '5-5':25
+};
+function scoreOf(f,d){ return (f&&d) ? (RISK_MATRIX[`${f}-${d}`]||null) : null; }
+// Biru:1-5, Hijau:6-11, Kuning:12-15, Jingga:16-19, Merah:20-25
+function sc(s){ if(!s)return ''; if(s<=5)return 's-blue'; if(s<=11)return 's-low'; if(s<=15)return 's-med'; if(s<=19)return 's-high'; return 's-vhigh'; }
+function sl(s){ if(!s)return '—'; if(s<=5)return 'Sangat Rendah'; if(s<=11)return 'Rendah'; if(s<=15)return 'Sedang'; if(s<=19)return 'Tinggi'; return 'Sangat Tinggi'; }
+function mc(v){ if(v<=5)return 'background:#dbeafe;color:#1e3a8a'; if(v<=11)return 'background:#dcfce7;color:#166534'; if(v<=15)return 'background:#fef9c3;color:#854d0e'; if(v<=19)return 'background:#ffedd5;color:#9a3412'; return 'background:#fee2e2;color:#991b1b'; }
 function getScore(rid,q){ if(q==='Q1') return RISKS.find(r=>r.id===rid)?.q1 || null; const e=allEntries.find(x=>x.risk_id===rid&&x.kuartal===q); return e?.nilai_risiko||null; }
 function sha256hex(s){ const buf=new TextEncoder().encode(s); return crypto.subtle.digest('SHA-256',buf).then(b=>Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('')); }
 
@@ -457,6 +490,34 @@ function doLogout(){ currentUser=null; allEntries=[]; qStatus={}; document.getEl
 // ===== APP START =====
 async function startApp(){
   document.getElementById('loginPage').style.display='none';
+  // Cek apakah user wajib ganti password (kolom must_change_password)
+  if(currentUser.must_change_password){
+    document.getElementById('chpwModal').classList.add('show');
+    return;
+  }
+  _startAppReal();
+}
+
+async function doChangePassword(){
+  const np=document.getElementById('chpwNew').value;
+  const cp=document.getElementById('chpwConfirm').value;
+  const errEl=document.getElementById('chpwErr');
+  if(np.length<6){ errEl.textContent='Password minimal 6 karakter'; errEl.classList.add('show'); return; }
+  if(np!==cp){ errEl.textContent='Konfirmasi password tidak cocok'; errEl.classList.add('show'); return; }
+  const btn=document.getElementById('btnChpw'); btn.disabled=true; btn.innerHTML='<i class="ti ti-loader-2" style="animation:spin 1s linear infinite"></i> Menyimpan...';
+  try{
+    const hash=await sha256hex(np);
+    const {error}=await sb.from('users').update({password_hash:hash,must_change_password:false}).eq('id',currentUser.id);
+    if(error){ errEl.textContent='Gagal menyimpan: '+error.message; errEl.classList.add('show'); return; }
+    currentUser.must_change_password=false;
+    document.getElementById('chpwModal').classList.remove('show');
+    _startAppReal();
+  }catch(e){ errEl.textContent='Gagal terhubung'; errEl.classList.add('show'); }
+  finally{ btn.disabled=false; btn.innerHTML='<i class="ti ti-check"></i> Simpan Password Baru'; }
+}
+
+function _startAppReal(){
+  document.getElementById('loginPage').style.display='none';
   document.getElementById('appPage').style.display='block';
   document.getElementById('topUser').innerHTML=`<span class="pill ${SEKSI_PILLS[currentUser.seksi]||'pill-admin'}" style="margin-right:6px">${currentUser.seksi}</span>${currentUser.username}`;
   // Show/hide menu items
@@ -496,8 +557,8 @@ async function loadDashboard(){
   await refreshData();
   const fSeksi=document.getElementById('dashSeksiFilter')?.value||'';
   const seksis=['Seksi MSKI','Seksi Bank','Seksi PD','Seksi Vera','Subbagian Umum'];
-  let cLow=0,cMed=0,cHigh=0,cVH=0;
-  RISKS.forEach(r=>{ const s=getLatest(r); if(!s)return; if(s<=8)cLow++; else if(s<=14)cMed++; else if(s<=19)cHigh++; else cVH++; });
+  let cBlue=0,cLow=0,cMed=0,cHigh=0,cVH=0;
+  RISKS.forEach(r=>{ const s=getLatest(r); if(!s)return; if(s<=5)cBlue++; else if(s<=11)cLow++; else if(s<=15)cMed++; else if(s<=19)cHigh++; else cVH++; });
   let filled=0;
   RISKS.forEach(r=>{ ['Q2','Q3','Q4'].forEach(q=>{ const e=allEntries.find(x=>x.risk_id===r.id&&x.kuartal===q); if(e?.frekuensi&&e?.alasan) filled++; }); });
   const pct=Math.round(filled/(RISKS.length*3)*100);
@@ -507,7 +568,8 @@ async function loadDashboard(){
     <div class="stat-card"><div class="stat-label">Sangat Tinggi</div><div class="stat-val" style="color:#991b1b">${cVH}</div></div>
     <div class="stat-card"><div class="stat-label">Tinggi</div><div class="stat-val" style="color:#9a3412">${cHigh}</div></div>
     <div class="stat-card"><div class="stat-label">Sedang</div><div class="stat-val" style="color:#854d0e">${cMed}</div></div>
-    <div class="stat-card"><div class="stat-label">Rendah</div><div class="stat-val" style="color:#166534">${cLow}</div></div>`;
+    <div class="stat-card"><div class="stat-label">Rendah</div><div class="stat-val" style="color:#166534">${cLow}</div></div>
+    <div class="stat-card"><div class="stat-label">Sangat Rendah</div><div class="stat-val" style="color:#1e40af">${cBlue}</div></div>`;
 
   const filtered=fSeksi?RISKS.filter(r=>r.seksi===fSeksi):RISKS;
   const datasets=filtered.slice(0,7).map((r,i)=>({
@@ -520,8 +582,8 @@ async function loadDashboard(){
   document.getElementById('trendLegend').innerHTML=datasets.map((d,i)=>`<span style="display:flex;align-items:center;gap:3px"><span style="width:14px;height:3px;background:${CHART_COLORS[i%CHART_COLORS.length]};display:inline-block;border-radius:2px"></span><span style="color:#6b7280;font-size:11px">${d.label}</span></span>`).join('');
 
   if(distInst) distInst.destroy();
-  distInst=new Chart(document.getElementById('distChart'),{type:'doughnut',data:{labels:['Rendah','Sedang','Tinggi','Sangat Tinggi'],datasets:[{data:[cLow,cMed,cHigh,cVH],backgroundColor:['#86efac','#fde68a','#fdba74','#fca5a5'],borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'62%'}});
-  document.getElementById('distLegend').innerHTML=[['#86efac','Rendah',cLow],['#fde68a','Sedang',cMed],['#fdba74','Tinggi',cHigh],['#fca5a5','Sangat Tinggi',cVH]].map(([c,l,n])=>`<span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:${c};display:inline-block"></span><span style="font-size:12px;color:#6b7280">${l}: <b>${n}</b></span></span>`).join('');
+  distInst=new Chart(document.getElementById('distChart'),{type:'doughnut',data:{labels:['Sangat Rendah','Rendah','Sedang','Tinggi','Sangat Tinggi'],datasets:[{data:[cBlue,cLow,cMed,cHigh,cVH],backgroundColor:['#93c5fd','#86efac','#fde68a','#fdba74','#fca5a5'],borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'62%'}});
+  document.getElementById('distLegend').innerHTML=[['#93c5fd','Sangat Rendah',cBlue],['#86efac','Rendah',cLow],['#fde68a','Sedang',cMed],['#fdba74','Tinggi',cHigh],['#fca5a5','Sangat Tinggi',cVH]].map(([c,l,n])=>`<span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:${c};display:inline-block"></span><span style="font-size:12px;color:#6b7280">${l}: <b>${n}</b></span></span>`).join('');
 
   document.getElementById('seksiStatus').innerHTML=seksis.map(s=>{
     const rs=RISKS.filter(r=>r.seksi===s);
@@ -576,7 +638,7 @@ async function loadInputPage(){
           <label>Frekuensi Kejadian (1–5)<span class="req">*</span></label>
           <select id="f-${r.id}" ${disabled} onchange="autoCalc('${r.id}')">
             <option value="">— pilih —</option>
-            ${[1,2,3,4,5].map(v=>`<option value="${v}" ${e?.frekuensi==v?'selected':''}>${v} — ${['Jarang sekali','Jarang','Kadang-kadang','Sering','Sangat sering'][v-1]}</option>`).join('')}
+            ${[1,2,3,4,5].map(v=>`<option value="${v}" ${e?.frekuensi==v?'selected':''}>${v} — ${['Hampir tidak terjadi','Jarang terjadi','Kadang terjadi','Sering terjadi','Hampir pasti terjadi'][v-1]}</option>`).join('')}
           </select>
           <div class="err-msg" id="ef-${r.id}">Wajib dipilih</div>
         </div>
@@ -584,7 +646,7 @@ async function loadInputPage(){
           <label>Besaran Dampak (1–5)<span class="req">*</span></label>
           <select id="d-${r.id}" ${disabled} onchange="autoCalc('${r.id}')">
             <option value="">— pilih —</option>
-            ${[1,2,3,4,5].map(v=>`<option value="${v}" ${e?.dampak==v?'selected':''}>${v} — ${['Tidak signifikan','Minor','Moderat','Signifikan','Katastrofik'][v-1]}</option>`).join('')}
+            ${[1,2,3,4,5].map(v=>`<option value="${v}" ${e?.dampak==v?'selected':''}>${v} — ${['Tidak signifikan','Minor','Moderat','Signifikan','Sangat signifikan'][v-1]}</option>`).join('')}
           </select>
           <div class="err-msg" id="ed-${r.id}">Wajib dipilih</div>
         </div>
@@ -603,21 +665,34 @@ async function loadInputPage(){
           <div class="err-msg" id="ea-${r.id}">Wajib diisi</div>
         </div>
         <div>
-          <label>Bukti pendukung <span style="font-size:11px;color:#9ca3af;font-weight:400">(opsional)</span></label>
+          <label>Bukti pendukung <span class="req">*</span></label>
           <textarea id="b-${r.id}" placeholder="Nama dokumen, nomor surat, link folder, dsb." ${disabled}>${e?.bukti||''}</textarea>
+          <div class="err-msg" id="eb-${r.id}">Wajib diisi</div>
         </div>
       </div>
       ${isOpen&&!isSubmitted?`
-      <div style="margin-top:12px;display:flex;align-items:center;gap:8px">
+      <div style="margin-top:12px">
         <button class="btn btn-gray btn-sm" onclick="saveDraft('${r.id}','${q}')"><i class="ti ti-device-floppy"></i> Simpan Draft</button>
-        <button class="btn btn-success btn-sm" onclick="confirmSubmit('${r.id}','${q}')"><i class="ti ti-send"></i> Kirim Final</button>
       </div>`:
       isSubmitted&&isOpen?`<div style="margin-top:12px"><button class="btn btn-outline btn-sm" onclick="editEntry('${r.id}','${q}')"><i class="ti ti-edit"></i> Edit Jawaban</button></div>`:''}
     </div>`;
   }).join('');
-}
 
-function autoCalc(rid){
+  // Tombol kirim semua di bawah
+  const allSubmitted=risks.every(r=>{ const e=allEntries.find(x=>x.risk_id===r.id&&x.kuartal===q); return e?.status==='submitted'; });
+  if(isOpen){
+    const submitBtn=document.createElement('div');
+    submitBtn.className='card';
+    submitBtn.style.cssText='border:2px solid '+(allSubmitted?'#86efac':'var(--blue)')+';background:'+(allSubmitted?'#f0fdf4':'#eff6ff');
+    submitBtn.innerHTML=allSubmitted
+      ?`<div style="display:flex;align-items:center;gap:10px;justify-content:center;padding:6px 0"><i class="ti ti-circle-check" style="font-size:22px;color:#166534"></i><span style="font-size:14px;font-weight:600;color:#166534">Semua risiko telah dikirim untuk ${Q_LABELS[q]}</span></div>`
+      :`<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div><div style="font-size:14px;font-weight:600;color:var(--blue)">Kirim Semua Risiko — ${Q_LABELS[q]}</div><div style="font-size:12px;color:#6b7280;margin-top:2px">Pastikan semua risiko sudah disimpan draft sebelum mengirim.</div></div>
+        <button class="btn btn-success" onclick="confirmSubmitAll('${q}')"><i class="ti ti-send"></i> Kirim</button>
+      </div>`;
+    document.getElementById('inputContainer').appendChild(submitBtn);
+  }
+}
   const f=document.getElementById('f-'+rid)?.value;
   const d=document.getElementById('d-'+rid)?.value;
   const s=scoreOf(f,d);
@@ -635,10 +710,12 @@ function validateRisk(rid,q){
   const f=document.getElementById('f-'+rid)?.value;
   const d=document.getElementById('d-'+rid)?.value;
   const a=document.getElementById('a-'+rid)?.value?.trim();
+  const b=document.getElementById('b-'+rid)?.value?.trim();
   let ok=true;
   if(!f){ document.getElementById('f-'+rid).classList.add('err'); document.getElementById('ef-'+rid).classList.add('show'); ok=false; }
   if(!d){ document.getElementById('d-'+rid).classList.add('err'); document.getElementById('ed-'+rid).classList.add('show'); ok=false; }
   if(!a){ document.getElementById('a-'+rid).classList.add('err'); document.getElementById('ea-'+rid).classList.add('show'); ok=false; }
+  if(!b){ document.getElementById('b-'+rid).classList.add('err'); document.getElementById('eb-'+rid).classList.add('show'); ok=false; }
   if(!ok){ document.getElementById('rb-'+rid).classList.add('has-err'); document.getElementById('rb-'+rid).scrollIntoView({behavior:'smooth',block:'center'}); }
   return ok;
 }
@@ -667,8 +744,8 @@ function confirmSubmit(rid, q){
   const body=`
     <div class="review-row"><span class="review-label">Risiko</span><span class="review-val" style="text-align:left">${r.nama}</span></div>
     <div class="review-row"><span class="review-label">Kuartal</span><span class="review-val">${Q_LABELS[q]}</span></div>
-    <div class="review-row"><span class="review-label">Frekuensi</span><span class="review-val">${f} — ${['Jarang sekali','Jarang','Kadang-kadang','Sering','Sangat sering'][f-1]}</span></div>
-    <div class="review-row"><span class="review-label">Dampak</span><span class="review-val">${d} — ${['Tidak signifikan','Minor','Moderat','Signifikan','Katastrofik'][d-1]}</span></div>
+    <div class="review-row"><span class="review-label">Frekuensi</span><span class="review-val">${f} — ${['Hampir tidak terjadi','Jarang terjadi','Kadang terjadi','Sering terjadi','Hampir pasti terjadi'][f-1]}</span></div>
+    <div class="review-row"><span class="review-label">Dampak</span><span class="review-val">${d} — ${['Tidak signifikan','Minor','Moderat','Signifikan','Sangat signifikan'][d-1]}</span></div>
     <div class="review-row"><span class="review-label">Nilai Risiko</span><span class="review-val"><span class="score ${sc(s)}">${s}</span> ${sl(s)}</span></div>
     ${prevScore?`<div class="review-row"><span class="review-label">Perubahan dari ${prevQ}</span><span class="review-val" style="color:${s<prevScore?'#166534':s>prevScore?'#dc2626':'#6b7280'}">${s<prevScore?'▼ Turun':s>prevScore?'▲ Naik':'= Tetap'} (${prevScore} → ${s})</span></div>`:''}
     <div class="review-row"><span class="review-label">Alasan</span><span class="review-val" style="text-align:left;max-width:260px">${a}</span></div>
@@ -682,7 +759,50 @@ function confirmSubmit(rid, q){
      <button class="btn btn-success" onclick="doSubmit('${rid}','${q}','${f}','${d}',\`${a.replace(/`/g,"'")}\`,\`${b.replace(/`/g,"'")}\`)"><i class="ti ti-send"></i> Kirim Final</button>`);
 }
 
-async function doSubmit(rid,q,f,d,a,b){
+async function confirmSubmitAll(q){
+  const seksi=currentUser.seksi;
+  const risks=RISKS.filter(r=>r.seksi===seksi);
+  // Validasi semua risiko
+  let allValid=true;
+  for(const r of risks){
+    const e=allEntries.find(x=>x.risk_id===r.id&&x.kuartal===q);
+    if(e?.status==='submitted') continue;
+    if(!validateRisk(r.id,q)) allValid=false;
+  }
+  if(!allValid){ toast('Lengkapi semua field yang wajib diisi terlebih dahulu','err'); return; }
+  const draftCount=risks.filter(r=>{ const e=allEntries.find(x=>x.risk_id===r.id&&x.kuartal===q); return e&&e.status!=='submitted'; }).length;
+  const newCount=risks.filter(r=>{ const e=allEntries.find(x=>x.risk_id===r.id&&x.kuartal===q); return !e; }).length;
+  const toSend=draftCount+newCount;
+  showModal('Konfirmasi Kirim Semua',`Akan mengirim ${toSend} risiko untuk ${Q_LABELS[q]}.`,'',
+    `<button class="btn btn-gray" onclick="closeModal()">Batal</button>
+     <button class="btn btn-success" onclick="doSubmitAll('${q}')"><i class="ti ti-send"></i> Kirim</button>`);
+}
+
+async function doSubmitAll(q){
+  closeModal();
+  const seksi=currentUser.seksi;
+  const risks=RISKS.filter(r=>r.seksi===seksi);
+  let errors=[];
+  for(const r of risks){
+    const e=allEntries.find(x=>x.risk_id===r.id&&x.kuartal===q);
+    if(e?.status==='submitted') continue;
+    const f=document.getElementById('f-'+r.id)?.value;
+    const d=document.getElementById('d-'+r.id)?.value;
+    const a=document.getElementById('a-'+r.id)?.value?.trim();
+    const b=document.getElementById('b-'+r.id)?.value?.trim();
+    const s=scoreOf(f,d);
+    const payload={risk_id:r.id,kuartal:q,seksi,frekuensi:f?parseInt(f):null,dampak:d?parseInt(d):null,nilai_risiko:s,alasan:a||null,bukti:b||null,status:'submitted',submitted_at:new Date().toISOString(),submitted_by:currentUser.id,updated_at:new Date().toISOString()};
+    const {error}=await sb.from('risk_entries').upsert(payload,{onConflict:'risk_id,kuartal,seksi'});
+    if(error) errors.push(r.nama);
+    else await sb.from('submission_log').insert({action:'submit',actor_id:currentUser.id,actor_name:currentUser.username,new_values:payload});
+  }
+  await refreshData();
+  if(errors.length) toast('Beberapa gagal dikirim: '+errors.join(', '),'err');
+  else toast('Semua risiko berhasil dikirim ✓','ok');
+  loadInputPage();
+}
+
+
   closeModal();
   const payload={risk_id:rid,kuartal:q,seksi:currentUser.seksi,frekuensi:parseInt(f),dampak:parseInt(d),alasan:a,bukti:b||null,status:'submitted',submitted_at:new Date().toISOString(),submitted_by:currentUser.id,updated_at:new Date().toISOString()};
   const {error}=await sb.from('risk_entries').upsert(payload,{onConflict:'risk_id,kuartal,seksi'});
@@ -702,7 +822,7 @@ async function editEntry(rid,q){
 // ===== MATRIX =====
 async function loadMatrix(){
   await refreshData();
-  const fl=['5 — Sangat sering','4 — Sering','3 — Kadang-kadang','2 — Jarang','1 — Jarang sekali'];
+  const fl=['5 — Hampir pasti terjadi','4 — Sering terjadi','3 — Kadang terjadi','2 — Jarang terjadi','1 — Hampir tidak terjadi'];
   let rows='';
   for(let f=5;f>=1;f--){
     rows+=`<tr><th style="text-align:left;font-size:11px;padding:8px 10px;background:#f3f4f6;border:1px solid var(--border);font-weight:600;color:#374151">${fl[5-f]}</th>`;
@@ -710,7 +830,7 @@ async function loadMatrix(){
     rows+='</tr>';
   }
   document.getElementById('matrixBody').innerHTML=rows;
-  const lvs=[{l:'Sangat Tinggi (20–25)',sc2:'s-vhigh',min:20,max:25},{l:'Tinggi (15–19)',sc2:'s-high',min:15,max:19},{l:'Sedang (9–14)',sc2:'s-med',min:9,max:14},{l:'Rendah (1–8)',sc2:'s-low',min:1,max:8}];
+  const lvs=[{l:'Sangat Tinggi (20–25)',sc2:'s-vhigh',min:20,max:25},{l:'Tinggi (16–19)',sc2:'s-high',min:16,max:19},{l:'Sedang (12–15)',sc2:'s-med',min:12,max:15},{l:'Rendah (6–11)',sc2:'s-low',min:6,max:11},{l:'Sangat Rendah (1–5)',sc2:'s-blue',min:1,max:5}];
   let html='';
   lvs.forEach(lv=>{
     const rs=RISKS.filter(r=>{ const s=getLatest(r); return s>=lv.min&&s<=lv.max; });
@@ -759,15 +879,42 @@ async function loadAdmin(){
   document.getElementById('qStatusGrid').innerHTML=qs.map(q=>{
     const info=qStatus[q];
     const open=info?.is_open;
+    // Hitung submitted vs draft per kuartal
+    const submitted=allEntries.filter(x=>x.kuartal===q&&x.status==='submitted').length;
+    const draft=allEntries.filter(x=>x.kuartal===q&&x.status==='draft').length;
     return `<div class="q-card ${open?'open':'closed'}">
       <h3>${q}</h3>
-      <p style="font-size:12px;color:#6b7280;margin-bottom:12px">${{Q1:'Jan–Mar',Q2:'Apr–Jun',Q3:'Jul–Sep',Q4:'Okt–Des'}[q]} 2026</p>
-      <div style="margin-bottom:12px"><span class="status-dot ${open?'dot-open':'dot-closed'}"></span><span style="font-size:13px;font-weight:600;color:${open?'#166534':'#6b7280'}">${open?'TERBUKA':'DITUTUP'}</span></div>
+      <p style="font-size:12px;color:#6b7280;margin-bottom:8px">${{Q1:'Jan–Mar',Q2:'Apr–Jun',Q3:'Jul–Sep',Q4:'Okt–Des'}[q]} 2026</p>
+      <div style="margin-bottom:8px"><span class="status-dot ${open?'dot-open':'dot-closed'}"></span><span style="font-size:13px;font-weight:600;color:${open?'#166534':'#6b7280'}">${open?'TERBUKA':'DITUTUP'}</span></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+        <span style="font-size:11px;background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:20px;font-weight:600"><i class="ti ti-send" style="font-size:10px;vertical-align:-1px"></i> ${submitted} submitted</span>
+        <span style="font-size:11px;background:#fef9c3;color:#854d0e;padding:2px 8px;border-radius:20px;font-weight:600"><i class="ti ti-pencil" style="font-size:10px;vertical-align:-1px"></i> ${draft} draft</span>
+      </div>
       ${open
         ?`<button class="btn btn-danger btn-sm" style="width:100%" onclick="toggleQ('${q}',false)"><i class="ti ti-lock"></i> Tutup ${q}</button>`
         :`<button class="btn btn-success btn-sm" style="width:100%" onclick="toggleQ('${q}',true)"><i class="ti ti-lock-open"></i> Buka ${q}</button>`}
     </div>`;
   }).join('');
+
+  // Tabel detail per seksi
+  const seksis=['Seksi MSKI','Seksi Bank','Seksi PD','Seksi Vera','Subbagian Umum'];
+  let seksiHtml='<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Seksi</th><th>Risiko</th>';
+  qs.forEach(q=>seksiHtml+=`<th style="text-align:center">${q} Submit</th><th style="text-align:center">${q} Draft</th>`);
+  seksiHtml+='</tr></thead><tbody>';
+  seksis.forEach(s=>{
+    const rs=RISKS.filter(r=>r.seksi===s);
+    seksiHtml+=`<tr><td><span class="pill ${SEKSI_PILLS[s]}">${s}</span></td><td style="font-weight:600">${rs.length}</td>`;
+    qs.forEach(q=>{
+      const sub=rs.filter(r=>allEntries.find(x=>x.risk_id===r.id&&x.kuartal===q&&x.status==='submitted')).length;
+      const drft=rs.filter(r=>allEntries.find(x=>x.risk_id===r.id&&x.kuartal===q&&x.status==='draft')).length;
+      const subPct=rs.length?Math.round(sub/rs.length*100):0;
+      seksiHtml+=`<td style="text-align:center"><span style="font-weight:700;color:${sub===rs.length&&rs.length>0?'#166534':'#374151'}">${sub}/${rs.length}</span><div style="font-size:10px;color:#9ca3af">${subPct}%</div></td>`;
+      seksiHtml+=`<td style="text-align:center"><span style="font-weight:700;color:${drft>0?'#854d0e':'#9ca3af'}">${drft}</span></td>`;
+    });
+    seksiHtml+='</tr>';
+  });
+  seksiHtml+='</tbody></table></div>';
+  document.getElementById('seksiDetail').innerHTML=seksiHtml;
 
   const {data:logs}=await sb.from('submission_log').select('*').order('created_at',{ascending:false}).limit(20);
   document.getElementById('activityLog').innerHTML=logs?.length
