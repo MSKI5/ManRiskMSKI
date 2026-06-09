@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manajemen Risiko — KPPN Malang 2026</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--blue:#0c3d6b;--blue-light:#1e5fa3;--green:#166534;--red:#991b1b;--orange:#9a3412;--yellow:#854d0e;--gray:#6b7280;--border:#e0e4ea;--bg:#f0f2f5;--card:#fff;--radius:10px}
+body{font-family:system-ui,sans-serif;background:var(--bg);color:#1a1a1a;min-height:100vh}
+
+/* ===== LOGIN ===== */
+#loginPage{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.login-box{background:var(--card);border-radius:16px;padding:40px;width:100%;max-width:400px;border:1px solid var(--border);box-shadow:0 4px 24px rgba(0,0,0,.08)}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-logo h1{font-size:20px;font-weight:700;color:var(--blue);margin-top:12px}
+.login-logo p{font-size:13px;color:var(--gray);margin-top:4px}
+.login-badge{width:56px;height:56px;background:var(--blue);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto}
+.login-badge i{font-size:28px;color:#fff}
+.form-group{margin-bottom:16px}
+.form-group label{font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px}
+.form-group input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;transition:border-color .15s;font-family:inherit}
+.form-group input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(12,61,107,.1)}
+.btn{padding:10px 20px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;font-family:inherit}
+.btn-primary{background:var(--blue);color:#fff;width:100%;justify-content:center}
+.btn-primary:hover{background:var(--blue-light)}
+.btn-primary:active{transform:scale(.98)}
+.btn-sm{padding:7px 14px;font-size:12px}
+.btn-success{background:#166534;color:#fff}
+.btn-success:hover{background:#15803d}
+.btn-danger{background:#dc2626;color:#fff}
+.btn-danger:hover{background:#b91c1c}
+.btn-outline{background:#fff;color:var(--blue);border:1.5px solid var(--blue)}
+.btn-outline:hover{background:#eff6ff}
+.btn-gray{background:#f3f4f6;color:#374151;border:1px solid var(--border)}
+.btn-gray:hover{background:#e5e7eb}
+.login-err{background:#fee2e2;color:#991b1b;padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:14px;display:none}
+.login-err.show{display:block}
+.user-list{margin-top:20px;background:#f8fafc;border-radius:8px;padding:14px;font-size:12px}
+.user-list h4{font-weight:600;color:var(--gray);margin-bottom:8px;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+.user-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)}
+.user-row:last-child{border:none}
+
+/* ===== TOPBAR ===== */
+#appPage{display:none}
+.topbar{background:var(--blue);color:#fff;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
+.topbar-left{display:flex;align-items:center;gap:10px}
+.topbar-left h1{font-size:15px;font-weight:600}
+.topbar-left p{font-size:11px;opacity:.7}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.user-badge{background:rgba(255,255,255,.15);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:500}
+.btn-logout{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);padding:5px 12px;font-size:12px;border-radius:6px;cursor:pointer;transition:all .15s;font-family:inherit}
+.btn-logout:hover{background:rgba(255,255,255,.2)}
+
+/* ===== LAYOUT ===== */
+.layout{display:flex;min-height:calc(100vh - 56px)}
+.sidebar{width:220px;background:var(--card);border-right:1px solid var(--border);padding:16px 12px;flex-shrink:0;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto}
+.sidebar-section{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#9ca3af;margin:14px 0 6px 8px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:#374151;font-weight:500;transition:all .15s;margin-bottom:2px;border:none;background:transparent;width:100%;text-align:left;font-family:inherit}
+.nav-item i{font-size:17px;color:#9ca3af;flex-shrink:0}
+.nav-item:hover{background:#f3f4f6}
+.nav-item.active{background:#eff6ff;color:var(--blue)}
+.nav-item.active i{color:var(--blue)}
+.main{flex:1;padding:20px;overflow-x:hidden}
+.page{display:none}.page.active{display:block}
+
+/* ===== CARDS & COMMON ===== */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.card-title{font-size:15px;font-weight:600;color:var(--blue);display:flex;align-items:center;gap:8px}
+label{font-size:12px;font-weight:600;color:#374151;display:block;margin-bottom:5px}
+.req{color:#dc2626;margin-left:2px}
+select,input,textarea{width:100%;font-size:13px;padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;background:#fff;color:#1a1a1a;font-family:inherit;transition:border-color .15s}
+select:focus,input:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(12,61,107,.08)}
+select.err,textarea.err{border-color:#f87171;background:#fff8f8}
+.err-msg{font-size:11px;color:#dc2626;margin-top:3px;display:none}
+.err-msg.show{display:block}
+textarea{resize:vertical;min-height:68px;line-height:1.5}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+
+/* ===== BADGES ===== */
+.badge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;display:inline-block}
+.bp26{background:#dbeafe;color:#1e40af}
+.br26{background:#dcfce7;color:#166534}
+.bq1{background:#fef3c7;color:#92400e}
+.bprev{background:#f3e8ff;color:#6b21a8}
+.pill{font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;white-space:nowrap}
+.pill-mski{background:#dbeafe;color:#1e40af}
+.pill-bank{background:#dcfce7;color:#166534}
+.pill-pd{background:#fef3c7;color:#92400e}
+.pill-vera{background:#f3e8ff;color:#7e22ce}
+.pill-umum{background:#ffe4e6;color:#9f1239}
+.pill-admin{background:#f1f5f9;color:#334155}
+
+/* ===== SCORE ===== */
+.score{padding:4px 12px;border-radius:7px;font-weight:700;font-size:13px;display:inline-block;min-width:44px;text-align:center}
+.s-low{background:#dcfce7;color:#166534}
+.s-med{background:#fef9c3;color:#854d0e}
+.s-high{background:#ffedd5;color:#9a3412}
+.s-vhigh{background:#fee2e2;color:#991b1b}
+.score-lg{padding:10px 18px;font-size:18px;font-weight:700;border-radius:9px;text-align:center}
+
+/* ===== RISK BLOCK ===== */
+.risk-block{border:1.5px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;background:#fafbfc;transition:border-color .15s}
+.risk-block:hover{border-color:#93c5fd}
+.risk-block.has-err{border-color:#f87171;background:#fff8f8}
+.risk-block.is-submitted{border-color:#86efac;background:#f0fdf4}
+.risk-name{font-size:14px;font-weight:600;color:#1a1a1a;margin-bottom:3px}
+.risk-sub{font-size:12px;color:var(--gray);margin-bottom:10px}
+.calc-row{background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:10px 14px;display:flex;align-items:center;gap:12px;margin-top:8px;flex-wrap:wrap}
+
+/* ===== KUARTAL STATUS ===== */
+.q-status-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.q-card{border:2px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center;transition:all .2s}
+.q-card.open{border-color:#86efac;background:#f0fdf4}
+.q-card.closed{border-color:var(--border);background:#f9fafb}
+.q-card h3{font-size:15px;font-weight:700;margin-bottom:6px}
+.q-card .status-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:middle}
+.dot-open{background:#22c55e}
+.dot-closed{background:#d1d5db}
+
+/* ===== TABLE ===== */
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{background:#f3f4f6;padding:9px 10px;text-align:left;font-weight:600;color:#374151;font-size:11px;border-bottom:1px solid var(--border);position:sticky;top:0}
+.tbl td{padding:9px 10px;border-bottom:1px solid #f3f4f6;color:#374151;vertical-align:middle}
+.tbl tr:hover td{background:#f9fafb}
+
+/* ===== STATS ===== */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px}
+.stat-card{background:#f8fafc;border:1px solid var(--border);border-radius:9px;padding:12px 14px}
+.stat-label{font-size:11px;color:var(--gray);margin-bottom:4px;font-weight:500}
+.stat-val{font-size:22px;font-weight:700;color:var(--blue)}
+.prog-bar{height:5px;background:#e5e7eb;border-radius:3px;margin-top:6px;overflow:hidden}
+.pb-fill{height:100%;background:var(--blue);border-radius:3px;transition:width .4s}
+.chart-wrap{position:relative;height:220px;width:100%}
+
+/* ===== CONFIRM MODAL ===== */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal-box{background:#fff;border-radius:14px;padding:28px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto}
+.modal-title{font-size:16px;font-weight:700;color:var(--blue);margin-bottom:4px}
+.modal-sub{font-size:13px;color:var(--gray);margin-bottom:20px}
+.review-row{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid #f3f4f6;gap:12px;font-size:13px}
+.review-row:last-child{border:none}
+.review-label{color:var(--gray);font-weight:500;min-width:140px}
+.review-val{text-align:right;font-weight:600;flex:1}
+.modal-actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
+
+/* ===== TOAST ===== */
+.toast{position:fixed;bottom:24px;right:24px;padding:12px 18px;border-radius:9px;font-size:13px;font-weight:500;z-index:999;display:none;animation:fadeUp .25s;max-width:320px;line-height:1.4}
+.toast.show{display:block}
+.toast-ok{background:#166534;color:#fff}
+.toast-err{background:#dc2626;color:#fff}
+.toast-info{background:var(--blue);color:#fff}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ===== MISC ===== */
+.empty{text-align:center;padding:48px 20px;color:#9ca3af;font-size:13px}
+.empty i{font-size:36px;display:block;margin-bottom:10px;opacity:.4}
+.divider{height:1px;background:var(--border);margin:16px 0}
+.tag-open{background:#dcfce7;color:#166534;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+.tag-closed{background:#f3f4f6;color:#6b7280;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+.tag-submitted{background:#dbeafe;color:#1e40af;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+.section-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #f3f4f6;font-size:13px;gap:8px;flex-wrap:wrap}
+.section-row:last-child{border:none}
+.info-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:11px 14px;font-size:13px;color:#1e40af;margin-bottom:16px;display:flex;gap:8px}
+.warn-box{background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:11px 14px;font-size:13px;color:#92400e;margin-bottom:16px;display:flex;gap:8px}
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN PAGE ===== -->
+<div id="loginPage">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="login-badge"><i class="ti ti-shield-check"></i></div>
+      <h1>Manajemen Risiko</h1>
+      <p>KPPN Tipe A1 Malang · 2026</p>
+    </div>
+    <div class="login-err" id="loginErr"></div>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" id="loginUser" placeholder="Contoh: mski" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn btn-primary" onclick="doLogin()" id="btnLogin">
+      <i class="ti ti-login"></i> Masuk
+    </button>
+    <div class="user-list">
+      <h4>Akun Default</h4>
+      <div class="user-row"><span><strong>admin</strong></span><span style="color:#6b7280">ADMIN2026</span></div>
+      <div class="user-row"><span><strong>mski</strong></span><span style="color:#6b7280">MSKI2026</span></div>
+      <div class="user-row"><span><strong>bank</strong></span><span style="color:#6b7280">BANK2026</span></div>
+      <div class="user-row"><span><strong>pd</strong></span><span style="color:#6b7280">PD2026</span></div>
+      <div class="user-row"><span><strong>vera</strong></span><span style="color:#6b7280">VERA2026</span></div>
+      <div class="user-row"><span><strong>umum</strong></span><span style="color:#6b7280">UMUM2026</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== APP PAGE ===== -->
+<div id="appPage">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div>
+        <h1><i class="ti ti-shield-check" style="margin-right:6px;font-size:18px;vertical-align:-2px"></i>Manajemen Risiko KPPN Malang</h1>
+        <p>Laporan Triwulanan 2026</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="user-badge" id="topUser"></span>
+      <button class="btn-logout" onclick="doLogout()"><i class="ti ti-logout" style="font-size:14px;vertical-align:-1px;margin-right:3px"></i>Keluar</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-section">Menu</div>
+      <button class="nav-item active" onclick="showPage('dashboard',this)" id="nav-dashboard">
+        <i class="ti ti-dashboard"></i> Dashboard
+      </button>
+      <button class="nav-item" onclick="showPage('input',this)" id="nav-input" style="display:none">
+        <i class="ti ti-edit"></i> Input Risiko
+      </button>
+      <button class="nav-item" onclick="showPage('matrix',this)" id="nav-matrix">
+        <i class="ti ti-layout-grid"></i> Matriks Risiko
+      </button>
+      <button class="nav-item" onclick="showPage('rekap',this)" id="nav-rekap">
+        <i class="ti ti-table"></i> Rekap Data
+      </button>
+      <div class="sidebar-section" id="adminSection" style="display:none">Admin</div>
+      <button class="nav-item" onclick="showPage('admin',this)" id="nav-admin" style="display:none">
+        <i class="ti ti-settings"></i> Kelola Kuartal
+      </button>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="stat-grid" id="statGrid"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div class="card" style="margin:0">
+            <div class="card-header"><span class="card-title"><i class="ti ti-chart-line"></i> Tren Nilai Risiko</span>
+              <select id="dashSeksiFilter" onchange="loadDashboard()" style="width:auto;font-size:12px;padding:5px 8px">
+                <option value="">Semua Seksi</option>
+                <option value="Seksi MSKI">Seksi MSKI</option>
+                <option value="Seksi Bank">Seksi Bank</option>
+                <option value="Seksi PD">Seksi PD</option>
+                <option value="Seksi Vera">Seksi Vera</option>
+                <option value="Subbagian Umum">Subbag Umum</option>
+              </select>
+            </div>
+            <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+            <div id="trendLegend" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;font-size:11px"></div>
+          </div>
+          <div class="card" style="margin:0">
+            <div class="card-header"><span class="card-title"><i class="ti ti-chart-donut"></i> Distribusi Level</span></div>
+            <div class="chart-wrap" style="height:170px"><canvas id="distChart"></canvas></div>
+            <div id="distLegend" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title"><i class="ti ti-users"></i> Status Pengisian per Seksi</span></div>
+          <div id="seksiStatus"></div>
+        </div>
+      </div>
+
+      <!-- INPUT RISIKO -->
+      <div class="page" id="page-input">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title"><i class="ti ti-edit"></i> Input Nilai Risiko</span>
+            <select id="inputQ" onchange="loadInputPage()" style="width:auto;font-size:13px;padding:6px 10px">
+              <option value="Q1">Q1 — Jan s.d. Mar 2026</option>
+              <option value="Q2" selected>Q2 — Apr s.d. Jun 2026</option>
+              <option value="Q3">Q3 — Jul s.d. Sep 2026</option>
+              <option value="Q4">Q4 — Okt s.d. Des 2026</option>
+            </select>
+          </div>
+          <div id="inputStatus"></div>
+        </div>
+        <div id="inputContainer"></div>
+      </div>
+
+      <!-- MATRIKS -->
+      <div class="page" id="page-matrix">
+        <div class="card">
+          <div class="card-header"><span class="card-title"><i class="ti ti-layout-grid"></i> Matriks Risiko (Frekuensi × Dampak)</span></div>
+          <p style="font-size:13px;color:var(--gray);margin-bottom:14px">Nilai risiko = Frekuensi × Dampak. Skala 1–5 untuk masing-masing dimensi.</p>
+          <div style="overflow-x:auto">
+            <table style="border-collapse:collapse;min-width:400px;font-size:12px;width:100%">
+              <thead><tr>
+                <th style="background:#f3f4f6;border:1px solid var(--border);padding:8px 10px;text-align:left;font-size:11px;font-weight:600;color:#374151">Frekuensi ↓ / Dampak →</th>
+                <th style="background:#f3f4f6;border:1px solid var(--border);padding:8px 10px;text-align:center;font-size:11px;font-weight:600;color:#374151">1 — Tidak Signifikan</th>
+                <th style="background:#f3f4f6;border:1px solid var(--border);padding:8px 10px;text-align:center;font-size:11px;font-weight:600;color:#374151">2 — Minor</th>
+                <th style="background:#f3f4f6;border:1px solid var(--border);padding:8px 10px;text-align:center;font-size:11px;font-weight:600;color:#374151">3 — Moderat</th>
+                <th style="background:#f3f4f6;border:1px solid var(--border);padding:8px 10px;text-align:center;font-size:11px;font-weight:600;color:#374151">4 — Signifikan</th>
+                <th style="background:#f3f4f6;border:1px solid var(--border);padding:8px 10px;text-align:center;font-size:11px;font-weight:600;color:#374151">5 — Katastrofik</th>
+              </tr></thead>
+              <tbody id="matrixBody"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;font-size:12px">
+            <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:#dcfce7;display:inline-block"></span><b style="color:#166534">1–8 Rendah</b></span>
+            <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:#fef9c3;display:inline-block"></span><b style="color:#854d0e">9–14 Sedang</b></span>
+            <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:#ffedd5;display:inline-block"></span><b style="color:#9a3412">15–19 Tinggi</b></span>
+            <span style="display:flex;align-items:center;gap:5px"><span style="width:12px;height:12px;border-radius:3px;background:#fee2e2;display:inline-block"></span><b style="color:#991b1b">20–25 Sangat Tinggi</b></span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title"><i class="ti ti-list-details"></i> Daftar Risiko per Level</span></div>
+          <div id="matrixList"></div>
+        </div>
+      </div>
+
+      <!-- REKAP -->
+      <div class="page" id="page-rekap">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title"><i class="ti ti-table"></i> Rekap Data Risiko 2026</span>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <select id="rekapSeksi" onchange="loadRekap()" style="width:auto;font-size:12px;padding:5px 8px">
+                <option value="">Semua Seksi</option>
+                <option value="Seksi MSKI">Seksi MSKI</option>
+                <option value="Seksi Bank">Seksi Bank</option>
+                <option value="Seksi PD">Seksi PD</option>
+                <option value="Seksi Vera">Seksi Vera</option>
+                <option value="Subbagian Umum">Subbag Umum</option>
+              </select>
+              <button class="btn btn-success btn-sm" onclick="exportCSV()"><i class="ti ti-download"></i> CSV</button>
+            </div>
+          </div>
+          <div id="rekapTable" style="overflow-x:auto"></div>
+        </div>
+      </div>
+
+      <!-- ADMIN -->
+      <div class="page" id="page-admin">
+        <div class="card">
+          <div class="card-header"><span class="card-title"><i class="ti ti-settings"></i> Kelola Status Kuartal</span></div>
+          <p style="font-size:13px;color:var(--gray);margin-bottom:16px">Buka kuartal untuk mengizinkan seksi mengisi data. Tutup kuartal setelah pengisian selesai.</p>
+          <div class="q-status-grid" id="qStatusGrid"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title"><i class="ti ti-history"></i> Log Aktivitas Terbaru</span></div>
+          <div id="activityLog"></div>
+        </div>
+      </div>
+
+    </div><!-- /main -->
+  </div><!-- /layout -->
+</div><!-- /appPage -->
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-box">
+    <div class="modal-title" id="modalTitle">Konfirmasi Pengiriman Data</div>
+    <div class="modal-sub" id="modalSub">Periksa kembali data sebelum mengirim</div>
+    <div id="modalBody"></div>
+    <div class="modal-actions" id="modalActions"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== SUPABASE INIT =====
+const SUPABASE_URL = 'https://pwntpjzkyjnmrocmfnaf.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB3bnRwanpreWpubXJvY21mbmFmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4ODMxMjAsImV4cCI6MjA5NjQ1OTEyMH0.BTqdG2OWKtU9jcluWfnOajtt34L1kfiz5LENF9QvC2g';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ===== RISK DATA =====
+const RISKS = [
+  {id:'r1',  ind:'1a-CP', sasaran:'Nilai Kinerja Pelaksanaan Anggaran K/L',                           nama:'Satker tidak valid dalam mengisi capaian output',                                        seksi:'Seksi MSKI',     p26:14,r26:10,q1:14},
+  {id:'r2',  ind:'1a-CP', sasaran:'Nilai Kinerja Pelaksanaan Anggaran K/L',                           nama:'Rendahnya nilai kualitas pelaksanaan anggaran',                                          seksi:'Seksi MSKI',     p26:19,r26:16,q1:19},
+  {id:'r3',  ind:'1a-CP', sasaran:'Nilai Kinerja Pelaksanaan Anggaran K/L',                           nama:'Satker terlambat menyampaikan pertanggungjawaban UP/TUP',                                seksi:'Seksi MSKI',     p26:19,r26:15,q1:19},
+  {id:'r4',  ind:'2a-CP', sasaran:'Indeks Kepuasan terhadap Layanan KPPN',                            nama:'Edukasi dan komunikasi yang tidak optimal',                                              seksi:'Seksi MSKI',     p26:13,r26:10,q1:13},
+  {id:'r5',  ind:'2a-CP', sasaran:'Indeks Kepuasan terhadap Layanan KPPN',                            nama:'Respon atas pertanyaan/konsultasi tidak tepat waktu',                                    seksi:'Seksi MSKI',     p26:16,r26:15,q1:16},
+  {id:'r6',  ind:'3a-CP', sasaran:'Indeks Kinerja Penyaluran Dana TKD',                               nama:'TKD tidak disalurkan tepat waktu',                                                       seksi:'Seksi Bank',     p26:16,r26:15,q1:16},
+  {id:'r7',  ind:'3b-N',  sasaran:'Indeks Kualitas Penyelesaian SP2D dan Akurasi Perencanaan Kas',    nama:'Waktu pengajuan SPM tidak sesuai RPD',                                                   seksi:'Seksi MSKI',     p26:17,r26:13,q1:17},
+  {id:'r8',  ind:'3b-N',  sasaran:'Indeks Kualitas Penyelesaian SP2D dan Akurasi Perencanaan Kas',    nama:'Penyelesaian SP2D lebih dari 1 jam',                                                     seksi:'Seksi PD',       p26:17,r26:13,q1:17},
+  {id:'r9',  ind:'3b-N',  sasaran:'Indeks Kualitas Penyelesaian SP2D dan Akurasi Perencanaan Kas',    nama:'Bertambahnya jumlah retur SP2D',                                                         seksi:'Seksi PD',       p26:22,r26:16,q1:22},
+  {id:'r10', ind:'3b-N',  sasaran:'Indeks Kualitas Penyelesaian SP2D dan Akurasi Perencanaan Kas',    nama:'Penyelesaian retur tidak tepat waktu',                                                   seksi:'Seksi Vera',     p26:14,r26:10,q1:14},
+  {id:'r11', ind:'4a-N',  sasaran:'Indeks Akuntabilitas Pelaporan Keuangan Satker',                   nama:'Keterlambatan LPJ bendahara oleh bendahara K/L',                                         seksi:'Seksi Vera',     p26:16,r26:15,q1:16},
+  {id:'r12', ind:'4a-N',  sasaran:'Indeks Akuntabilitas Pelaporan Keuangan Satker',                   nama:'Satker terlambat tutup periode permanen',                                                seksi:'Seksi Vera',     p26:16,r26:15,q1:16},
+  {id:'r13', ind:'5a-N',  sasaran:'Tingkat Kualitas Pengelolaan Kinerja Organisasi',                  nama:'Kurang optimalnya implementasi prinsip-prinsip SFO',                                     seksi:'Subbagian Umum', p26:17,r26:10,q1:17},
+  {id:'r14', ind:'6a-CP', sasaran:'Indeks Kualitas Pengelolaan Keuangan, BMN, Pengadaan, dan Arsip',  nama:'Kualitas LK tingkat UAKPA dan UAKPB tidak maksimal',                                     seksi:'Subbagian Umum', p26:17,r26:10,q1:17},
+  {id:'r15', ind:'6a-CP', sasaran:'Indeks Kualitas Pengelolaan Keuangan, BMN, Pengadaan, dan Arsip',  nama:'Kebakaran gedung kantor',                                                                seksi:'Subbagian Umum', p26:16,r26:15,q1:16},
+  {id:'r16', ind:'6a-CP', sasaran:'Indeks Kualitas Pengelolaan Keuangan, BMN, Pengadaan, dan Arsip',  nama:'Penerapan gedung ramah lingkungan',                                                      seksi:'Subbagian Umum', p26:13,r26:17,q1:13},
+  {id:'r17', ind:'6a-CP', sasaran:'Indeks Kualitas Pengelolaan Keuangan, BMN, Pengadaan, dan Arsip',  nama:'Kerusakan BMN',                                                                          seksi:'Subbagian Umum', p26:14,r26:11,q1:14},
+  {id:'r18', ind:'6b-N',  sasaran:'Nilai Kinerja TIK Kanwil DJPb',                                   nama:'Penyalahgunaan user aplikasi KemenKeu oleh pihak tidak berwenang',                       seksi:'Subbagian Umum', p26:13,r26:10,q1:13}
+];
+
+const Q_LABELS = {Q1:'Q1 (Jan–Mar)',Q2:'Q2 (Apr–Jun)',Q3:'Q3 (Jul–Sep)',Q4:'Q4 (Okt–Des)'};
+const SEKSI_PILLS = {'Seksi MSKI':'pill-mski','Seksi Bank':'pill-bank','Seksi PD':'pill-pd','Seksi Vera':'pill-vera','Subbagian Umum':'pill-umum','Admin':'pill-admin'};
+const CHART_COLORS = ['#1e40af','#166534','#9a3412','#7e22ce','#0e7490','#854d0e','#991b1b','#0369a1'];
+
+// ===== STATE =====
+let currentUser = null;
+let qStatus = {};
+let allEntries = [];
+let trendInst = null, distInst = null;
+
+// ===== UTILS =====
+function sc(s){ if(!s)return ''; if(s<=8)return 's-low'; if(s<=14)return 's-med'; if(s<=19)return 's-high'; return 's-vhigh'; }
+function sl(s){ if(!s)return '—'; if(s<=8)return 'Rendah'; if(s<=14)return 'Sedang'; if(s<=19)return 'Tinggi'; return 'Sangat Tinggi'; }
+function mc(v){ if(v<=8)return 'background:#dcfce7;color:#166534'; if(v<=14)return 'background:#fef9c3;color:#854d0e'; if(v<=19)return 'background:#ffedd5;color:#9a3412'; return 'background:#fee2e2;color:#991b1b'; }
+function scoreOf(f,d){ return f&&d ? parseInt(f)*parseInt(d) : null; }
+function getScore(rid,q){ if(q==='Q1') return RISKS.find(r=>r.id===rid)?.q1 || null; const e=allEntries.find(x=>x.risk_id===rid&&x.kuartal===q); return e?.nilai_risiko||null; }
+function sha256hex(s){ const buf=new TextEncoder().encode(s); return crypto.subtle.digest('SHA-256',buf).then(b=>Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('')); }
+
+function toast(msg,type='ok'){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className=`toast toast-${type} show`;
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+function showModal(title,sub,bodyHtml,actions){
+  document.getElementById('modalTitle').textContent=title;
+  document.getElementById('modalSub').textContent=sub;
+  document.getElementById('modalBody').innerHTML=bodyHtml;
+  document.getElementById('modalActions').innerHTML=actions;
+  document.getElementById('confirmModal').classList.add('show');
+}
+function closeModal(){ document.getElementById('confirmModal').classList.remove('show'); }
+
+// ===== LOGIN =====
+async function doLogin(){
+  const user=document.getElementById('loginUser').value.trim();
+  const pass=document.getElementById('loginPass').value;
+  const errEl=document.getElementById('loginErr');
+  if(!user||!pass){ errEl.textContent='Username dan password wajib diisi'; errEl.classList.add('show'); return; }
+  const btn=document.getElementById('btnLogin'); btn.disabled=true; btn.innerHTML='<i class="ti ti-loader-2" style="animation:spin 1s linear infinite"></i> Memuat...';
+  try{
+    const hash=await sha256hex(pass);
+    const {data,error}=await sb.from('users').select('*').eq('username',user).eq('password_hash',hash).single();
+    if(error||!data){ errEl.textContent='Username atau password salah'; errEl.classList.add('show'); return; }
+    currentUser=data;
+    errEl.classList.remove('show');
+    startApp();
+  }catch(e){ errEl.textContent='Gagal terhubung ke server'; errEl.classList.add('show'); }
+  finally{ btn.disabled=false; btn.innerHTML='<i class="ti ti-login"></i> Masuk'; }
+}
+
+function doLogout(){ currentUser=null; allEntries=[]; qStatus={}; document.getElementById('loginUser').value=''; document.getElementById('loginPass').value=''; document.getElementById('loginPage').style.display='flex'; document.getElementById('appPage').style.display='none'; }
+
+// ===== APP START =====
+async function startApp(){
+  document.getElementById('loginPage').style.display='none';
+  document.getElementById('appPage').style.display='block';
+  document.getElementById('topUser').innerHTML=`<span class="pill ${SEKSI_PILLS[currentUser.seksi]||'pill-admin'}" style="margin-right:6px">${currentUser.seksi}</span>${currentUser.username}`;
+  // Show/hide menu items
+  const isAdmin=currentUser.role==='admin';
+  document.getElementById('nav-input').style.display=isAdmin?'none':'flex';
+  document.getElementById('nav-admin').style.display=isAdmin?'flex':'none';
+  document.getElementById('adminSection').style.display=isAdmin?'block':'none';
+  await refreshData();
+  showPage('dashboard',document.getElementById('nav-dashboard'));
+}
+
+async function refreshData(){
+  const [{data:qs},{data:en}]=await Promise.all([
+    sb.from('kuartal_status').select('*'),
+    sb.from('risk_entries').select('*')
+  ]);
+  qStatus={};
+  (qs||[]).forEach(q=>{ qStatus[q.kuartal]=q; });
+  allEntries=en||[];
+}
+
+// ===== NAVIGATION =====
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(id==='dashboard') loadDashboard();
+  if(id==='input') loadInputPage();
+  if(id==='matrix') loadMatrix();
+  if(id==='rekap') loadRekap();
+  if(id==='admin') loadAdmin();
+}
+
+// ===== DASHBOARD =====
+async function loadDashboard(){
+  await refreshData();
+  const fSeksi=document.getElementById('dashSeksiFilter')?.value||'';
+  const seksis=['Seksi MSKI','Seksi Bank','Seksi PD','Seksi Vera','Subbagian Umum'];
+  let cLow=0,cMed=0,cHigh=0,cVH=0;
+  RISKS.forEach(r=>{ const s=getLatest(r); if(!s)return; if(s<=8)cLow++; else if(s<=14)cMed++; else if(s<=19)cHigh++; else cVH++; });
+  let filled=0;
+  RISKS.forEach(r=>{ ['Q2','Q3','Q4'].forEach(q=>{ const e=allEntries.find(x=>x.risk_id===r.id&&x.kuartal===q); if(e?.frekuensi&&e?.alasan) filled++; }); });
+  const pct=Math.round(filled/(RISKS.length*3)*100);
+  document.getElementById('statGrid').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Total Risiko</div><div class="stat-val">${RISKS.length}</div></div>
+    <div class="stat-card"><div class="stat-label">Pengisian Q2–Q4</div><div class="stat-val">${pct}%</div><div class="prog-bar"><div class="pb-fill" style="width:${pct}%"></div></div></div>
+    <div class="stat-card"><div class="stat-label">Sangat Tinggi</div><div class="stat-val" style="color:#991b1b">${cVH}</div></div>
+    <div class="stat-card"><div class="stat-label">Tinggi</div><div class="stat-val" style="color:#9a3412">${cHigh}</div></div>
+    <div class="stat-card"><div class="stat-label">Sedang</div><div class="stat-val" style="color:#854d0e">${cMed}</div></div>
+    <div class="stat-card"><div class="stat-label">Rendah</div><div class="stat-val" style="color:#166534">${cLow}</div></div>`;
+
+  const filtered=fSeksi?RISKS.filter(r=>r.seksi===fSeksi):RISKS;
+  const datasets=filtered.slice(0,7).map((r,i)=>({
+    label:r.nama.substring(0,28)+(r.nama.length>28?'…':''),
+    data:['Q1','Q2','Q3','Q4'].map(q=>getScore(r.id,q)),
+    borderColor:CHART_COLORS[i%CHART_COLORS.length],backgroundColor:'transparent',tension:.35,pointRadius:4,borderWidth:2,spanGaps:true
+  }));
+  if(trendInst) trendInst.destroy();
+  trendInst=new Chart(document.getElementById('trendChart'),{type:'line',data:{labels:['Q1','Q2','Q3','Q4'],datasets},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{min:0,max:25}}}});
+  document.getElementById('trendLegend').innerHTML=datasets.map((d,i)=>`<span style="display:flex;align-items:center;gap:3px"><span style="width:14px;height:3px;background:${CHART_COLORS[i%CHART_COLORS.length]};display:inline-block;border-radius:2px"></span><span style="color:#6b7280;font-size:11px">${d.label}</span></span>`).join('');
+
+  if(distInst) distInst.destroy();
+  distInst=new Chart(document.getElementById('distChart'),{type:'doughnut',data:{labels:['Rendah','Sedang','Tinggi','Sangat Tinggi'],datasets:[{data:[cLow,cMed,cHigh,cVH],backgroundColor:['#86efac','#fde68a','#fdba74','#fca5a5'],borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'62%'}});
+  document.getElementById('distLegend').innerHTML=[['#86efac','Rendah',cLow],['#fde68a','Sedang',cMed],['#fdba74','Tinggi',cHigh],['#fca5a5','Sangat Tinggi',cVH]].map(([c,l,n])=>`<span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:${c};display:inline-block"></span><span style="font-size:12px;color:#6b7280">${l}: <b>${n}</b></span></span>`).join('');
+
+  document.getElementById('seksiStatus').innerHTML=seksis.map(s=>{
+    const rs=RISKS.filter(r=>r.seksi===s);
+    let done=0; rs.forEach(r=>{ ['Q2','Q3','Q4'].forEach(q=>{ const e=allEntries.find(x=>x.risk_id===r.id&&x.kuartal===q); if(e?.status==='submitted') done++; }); });
+    const tot=rs.length*3, p=tot?Math.round(done/tot*100):0;
+    return `<div class="section-row"><span><span class="pill ${SEKSI_PILLS[s]}">${s}</span></span><span style="font-size:12px;color:#6b7280">${rs.length} risiko · ${done}/${tot} submitted</span><span style="font-weight:600;color:${p===100?'#166534':p>0?'#854d0e':'#9ca3af'}">${p}%</span></div>`;
+  }).join('');
+}
+
+function getLatest(r){ for(const q of ['Q4','Q3','Q2','Q1']){ const s=getScore(r.id,q); if(s) return s; } return r.q1; }
+
+// ===== INPUT PAGE =====
+async function loadInputPage(){
+  await refreshData();
+  const q=document.getElementById('inputQ').value;
+  const qInfo=qStatus[q];
+  const isOpen=qInfo?.is_open;
+  const seksi=currentUser.seksi;
+  const risks=RISKS.filter(r=>r.seksi===seksi);
+  const prevQ=q==='Q2'?'Q1':q==='Q3'?'Q2':q==='Q4'?'Q3':null;
+
+  document.getElementById('inputStatus').innerHTML=isOpen
+    ?`<div class="info-box"><i class="ti ti-lock-open" style="font-size:18px;flex-shrink:0"></i><span><b>${Q_LABELS[q]}</b> sedang <b style="color:#166534">TERBUKA</b> untuk diisi. Field bertanda <span style="color:#dc2626">*</span> wajib diisi.</span></div>`
+    :`<div class="warn-box"><i class="ti ti-lock" style="font-size:18px;flex-shrink:0"></i><span><b>${Q_LABELS[q]}</b> saat ini <b>DITUTUP</b>. Pengisian hanya bisa dilakukan setelah admin membuka kuartal ini.</span></div>`;
+
+  if(!risks.length){ document.getElementById('inputContainer').innerHTML='<div class="empty"><i class="ti ti-inbox"></i>Tidak ada risiko untuk seksi ini</div>'; return; }
+
+  document.getElementById('inputContainer').innerHTML=risks.map(r=>{
+    const e=allEntries.find(x=>x.risk_id===r.id&&x.kuartal===q);
+    const isSubmitted=e?.status==='submitted';
+    const prevScore=prevQ?getScore(r.id,prevQ):null;
+    const curScore=e?.nilai_risiko||null;
+    let trendHtml='';
+    if(prevScore&&curScore){
+      if(curScore<prevScore) trendHtml=`<span style="font-size:11px;color:#16a34a;font-weight:600"><i class="ti ti-trending-down"></i> Turun dari ${prevScore}</span>`;
+      else if(curScore>prevScore) trendHtml=`<span style="font-size:11px;color:#dc2626;font-weight:600"><i class="ti ti-trending-up"></i> Naik dari ${prevScore}</span>`;
+      else trendHtml=`<span style="font-size:11px;color:#6b7280;font-weight:600"><i class="ti ti-minus"></i> Tetap ${prevScore}</span>`;
+    }
+    const disabled=(!isOpen||isSubmitted)?'disabled':'';
+    return `
+    <div class="risk-block ${isSubmitted?'is-submitted':''}" id="rb-${r.id}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+        <div><div class="risk-name">${r.nama}</div><div class="risk-sub">${r.ind} · ${r.sasaran}</div></div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <div style="display:flex;gap:5px;flex-wrap:wrap"><span class="badge bp26">P26:${r.p26}</span><span class="badge br26">R26:${r.r26}</span><span class="badge bq1">Q1:${r.q1}</span>${prevQ&&prevScore?`<span class="badge bprev">${prevQ}:${prevScore}</span>`:''}</div>
+          ${trendHtml}
+          ${isSubmitted?'<span class="tag-submitted"><i class="ti ti-circle-check" style="font-size:12px;vertical-align:-1px;margin-right:2px"></i>Submitted</span>':''}
+        </div>
+      </div>
+      <div class="grid2" style="margin-bottom:10px">
+        <div>
+          <label>Frekuensi Kejadian (1–5)<span class="req">*</span></label>
+          <select id="f-${r.id}" ${disabled} onchange="autoCalc('${r.id}')">
+            <option value="">— pilih —</option>
+            ${[1,2,3,4,5].map(v=>`<option value="${v}" ${e?.frekuensi==v?'selected':''}>${v} — ${['Jarang sekali','Jarang','Kadang-kadang','Sering','Sangat sering'][v-1]}</option>`).join('')}
+          </select>
+          <div class="err-msg" id="ef-${r.id}">Wajib dipilih</div>
+        </div>
+        <div>
+          <label>Besaran Dampak (1–5)<span class="req">*</span></label>
+          <select id="d-${r.id}" ${disabled} onchange="autoCalc('${r.id}')">
+            <option value="">— pilih —</option>
+            ${[1,2,3,4,5].map(v=>`<option value="${v}" ${e?.dampak==v?'selected':''}>${v} — ${['Tidak signifikan','Minor','Moderat','Signifikan','Katastrofik'][v-1]}</option>`).join('')}
+          </select>
+          <div class="err-msg" id="ed-${r.id}">Wajib dipilih</div>
+        </div>
+      </div>
+      <div class="calc-row" id="cr-${r.id}">
+        <i class="ti ti-calculator" style="font-size:18px;color:#9ca3af"></i>
+        <span style="font-size:12px;color:#6b7280">Nilai Risiko:</span>
+        <span class="score ${sc(curScore)}" id="sv-${r.id}" style="font-size:15px">${curScore||'—'}</span>
+        <span style="font-size:12px;color:#6b7280" id="sl-${r.id}">${curScore?sl(curScore):''}</span>
+        ${curScore?`<span style="font-size:11px;font-weight:600;color:${curScore<=r.r26?'#166534':'#9a3412'}">${curScore<=r.r26?'✓ Target R26 tercapai':'Target R26: '+r.r26}</span>`:''}
+      </div>
+      <div class="grid2" style="margin-top:12px">
+        <div>
+          <label>Alasan perubahan dari ${prevQ||'awal'} ke ${q}<span class="req">*</span></label>
+          <textarea id="a-${r.id}" placeholder="Jelaskan alasan perubahan nilai risiko..." ${disabled}>${e?.alasan||''}</textarea>
+          <div class="err-msg" id="ea-${r.id}">Wajib diisi</div>
+        </div>
+        <div>
+          <label>Bukti pendukung <span style="font-size:11px;color:#9ca3af;font-weight:400">(opsional)</span></label>
+          <textarea id="b-${r.id}" placeholder="Nama dokumen, nomor surat, link folder, dsb." ${disabled}>${e?.bukti||''}</textarea>
+        </div>
+      </div>
+      ${isOpen&&!isSubmitted?`
+      <div style="margin-top:12px;display:flex;align-items:center;gap:8px">
+        <button class="btn btn-gray btn-sm" onclick="saveDraft('${r.id}','${q}')"><i class="ti ti-device-floppy"></i> Simpan Draft</button>
+        <button class="btn btn-success btn-sm" onclick="confirmSubmit('${r.id}','${q}')"><i class="ti ti-send"></i> Kirim Final</button>
+      </div>`:
+      isSubmitted&&isOpen?`<div style="margin-top:12px"><button class="btn btn-outline btn-sm" onclick="editEntry('${r.id}','${q}')"><i class="ti ti-edit"></i> Edit Jawaban</button></div>`:''}
+    </div>`;
+  }).join('');
+}
+
+function autoCalc(rid){
+  const f=document.getElementById('f-'+rid)?.value;
+  const d=document.getElementById('d-'+rid)?.value;
+  const s=scoreOf(f,d);
+  const r=RISKS.find(x=>x.id===rid);
+  if(document.getElementById('sv-'+rid)){
+    document.getElementById('sv-'+rid).className=`score ${sc(s)}`; document.getElementById('sv-'+rid).style.fontSize='15px';
+    document.getElementById('sv-'+rid).textContent=s||'—';
+    document.getElementById('sl-'+rid).textContent=s?sl(s):'';
+  }
+  if(f){ document.getElementById('f-'+rid).classList.remove('err'); document.getElementById('ef-'+rid).classList.remove('show'); }
+  if(d){ document.getElementById('d-'+rid).classList.remove('err'); document.getElementById('ed-'+rid).classList.remove('show'); }
+}
+
+function validateRisk(rid,q){
+  const f=document.getElementById('f-'+rid)?.value;
+  const d=document.getElementById('d-'+rid)?.value;
+  const a=document.getElementById('a-'+rid)?.value?.trim();
+  let ok=true;
+  if(!f){ document.getElementById('f-'+rid).classList.add('err'); document.getElementById('ef-'+rid).classList.add('show'); ok=false; }
+  if(!d){ document.getElementById('d-'+rid).classList.add('err'); document.getElementById('ed-'+rid).classList.add('show'); ok=false; }
+  if(!a){ document.getElementById('a-'+rid).classList.add('err'); document.getElementById('ea-'+rid).classList.add('show'); ok=false; }
+  if(!ok){ document.getElementById('rb-'+rid).classList.add('has-err'); document.getElementById('rb-'+rid).scrollIntoView({behavior:'smooth',block:'center'}); }
+  return ok;
+}
+
+async function saveDraft(rid, q){
+  const f=document.getElementById('f-'+rid)?.value;
+  const d=document.getElementById('d-'+rid)?.value;
+  const a=document.getElementById('a-'+rid)?.value?.trim();
+  const b=document.getElementById('b-'+rid)?.value?.trim();
+  const payload={risk_id:rid,kuartal:q,seksi:currentUser.seksi,frekuensi:f?parseInt(f):null,dampak:d?parseInt(d):null,alasan:a||null,bukti:b||null,status:'draft',updated_at:new Date().toISOString(),submitted_by:currentUser.id};
+  const {error}=await sb.from('risk_entries').upsert(payload,{onConflict:'risk_id,kuartal,seksi'});
+  if(error){ toast('Gagal menyimpan: '+error.message,'err'); return; }
+  await refreshData(); toast('Draft tersimpan'); loadInputPage();
+}
+
+function confirmSubmit(rid, q){
+  if(!validateRisk(rid,q)) return;
+  const r=RISKS.find(x=>x.id===rid);
+  const f=document.getElementById('f-'+rid).value;
+  const d=document.getElementById('d-'+rid).value;
+  const a=document.getElementById('a-'+rid).value.trim();
+  const b=document.getElementById('b-'+rid).value.trim();
+  const s=scoreOf(f,d);
+  const prevQ=q==='Q2'?'Q1':q==='Q3'?'Q2':q==='Q4'?'Q3':null;
+  const prevScore=prevQ?getScore(rid,prevQ):null;
+  const body=`
+    <div class="review-row"><span class="review-label">Risiko</span><span class="review-val" style="text-align:left">${r.nama}</span></div>
+    <div class="review-row"><span class="review-label">Kuartal</span><span class="review-val">${Q_LABELS[q]}</span></div>
+    <div class="review-row"><span class="review-label">Frekuensi</span><span class="review-val">${f} — ${['Jarang sekali','Jarang','Kadang-kadang','Sering','Sangat sering'][f-1]}</span></div>
+    <div class="review-row"><span class="review-label">Dampak</span><span class="review-val">${d} — ${['Tidak signifikan','Minor','Moderat','Signifikan','Katastrofik'][d-1]}</span></div>
+    <div class="review-row"><span class="review-label">Nilai Risiko</span><span class="review-val"><span class="score ${sc(s)}">${s}</span> ${sl(s)}</span></div>
+    ${prevScore?`<div class="review-row"><span class="review-label">Perubahan dari ${prevQ}</span><span class="review-val" style="color:${s<prevScore?'#166534':s>prevScore?'#dc2626':'#6b7280'}">${s<prevScore?'▼ Turun':s>prevScore?'▲ Naik':'= Tetap'} (${prevScore} → ${s})</span></div>`:''}
+    <div class="review-row"><span class="review-label">Alasan</span><span class="review-val" style="text-align:left;max-width:260px">${a}</span></div>
+    ${b?`<div class="review-row"><span class="review-label">Bukti</span><span class="review-val" style="text-align:left;max-width:260px">${b}</span></div>`:''}
+    <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:10px 12px;margin-top:16px;font-size:12px;color:#92400e">
+      <i class="ti ti-alert-triangle" style="font-size:14px;vertical-align:-2px;margin-right:4px"></i>
+      Setelah dikirim, data dapat diedit kembali selama kuartal masih terbuka.
+    </div>`;
+  showModal('Konfirmasi Pengiriman Data','Periksa kembali data sebelum mengirim final',body,
+    `<button class="btn btn-gray" onclick="closeModal()">Batal, perbaiki</button>
+     <button class="btn btn-success" onclick="doSubmit('${rid}','${q}','${f}','${d}',\`${a.replace(/`/g,"'")}\`,\`${b.replace(/`/g,"'")}\`)"><i class="ti ti-send"></i> Kirim Final</button>`);
+}
+
+async function doSubmit(rid,q,f,d,a,b){
+  closeModal();
+  const payload={risk_id:rid,kuartal:q,seksi:currentUser.seksi,frekuensi:parseInt(f),dampak:parseInt(d),alasan:a,bukti:b||null,status:'submitted',submitted_at:new Date().toISOString(),submitted_by:currentUser.id,updated_at:new Date().toISOString()};
+  const {error}=await sb.from('risk_entries').upsert(payload,{onConflict:'risk_id,kuartal,seksi'});
+  if(error){ toast('Gagal mengirim: '+error.message,'err'); return; }
+  // Log
+  await sb.from('submission_log').insert({risk_entry_id:null,action:'submit',actor_id:currentUser.id,actor_name:currentUser.username,new_values:payload});
+  await refreshData(); toast('Data berhasil dikirim ✓','ok'); loadInputPage();
+}
+
+async function editEntry(rid,q){
+  const {error}=await sb.from('risk_entries').update({status:'draft',updated_at:new Date().toISOString()}).eq('risk_id',rid).eq('kuartal',q).eq('seksi',currentUser.seksi);
+  if(error){ toast('Gagal mengedit: '+error.message,'err'); return; }
+  await sb.from('submission_log').insert({action:'edit_reopen',actor_id:currentUser.id,actor_name:currentUser.username});
+  await refreshData(); toast('Mode edit diaktifkan','info'); loadInputPage();
+}
+
+// ===== MATRIX =====
+async function loadMatrix(){
+  await refreshData();
+  const fl=['5 — Sangat sering','4 — Sering','3 — Kadang-kadang','2 — Jarang','1 — Jarang sekali'];
+  let rows='';
+  for(let f=5;f>=1;f--){
+    rows+=`<tr><th style="text-align:left;font-size:11px;padding:8px 10px;background:#f3f4f6;border:1px solid var(--border);font-weight:600;color:#374151">${fl[5-f]}</th>`;
+    for(let d=1;d<=5;d++){ const v=f*d; rows+=`<td style="border:1px solid var(--border);padding:8px;text-align:center;font-size:12px;font-weight:700;${mc(v)}">${v}<br><span style="font-size:10px;font-weight:400">${sl(v)}</span></td>`; }
+    rows+='</tr>';
+  }
+  document.getElementById('matrixBody').innerHTML=rows;
+  const lvs=[{l:'Sangat Tinggi (20–25)',sc2:'s-vhigh',min:20,max:25},{l:'Tinggi (15–19)',sc2:'s-high',min:15,max:19},{l:'Sedang (9–14)',sc2:'s-med',min:9,max:14},{l:'Rendah (1–8)',sc2:'s-low',min:1,max:8}];
+  let html='';
+  lvs.forEach(lv=>{
+    const rs=RISKS.filter(r=>{ const s=getLatest(r); return s>=lv.min&&s<=lv.max; });
+    if(!rs.length) return;
+    html+=`<div style="margin-bottom:14px"><span class="score ${lv.sc2}" style="display:inline-block;margin-bottom:8px">${lv.l}</span><div>`;
+    rs.forEach(r=>{ const s=getLatest(r); html+=`<div class="section-row"><span><span class="pill ${SEKSI_PILLS[r.seksi]}">${r.seksi}</span> <span style="margin-left:6px;font-size:13px">${r.nama}</span></span><span class="score ${sc(s)}" style="font-size:12px;padding:3px 10px">${s}</span></div>`; });
+    html+='</div></div>';
+  });
+  document.getElementById('matrixList').innerHTML=html||'<div class="empty"><i class="ti ti-inbox"></i>Belum ada data</div>';
+}
+
+// ===== REKAP =====
+async function loadRekap(){
+  await refreshData();
+  const fSeksi=document.getElementById('rekapSeksi').value;
+  const risks=fSeksi?RISKS.filter(r=>r.seksi===fSeksi):RISKS;
+  const sv=s=>s?`<span class="score ${sc(s)}" style="font-size:11px;padding:2px 8px">${s}</span>`:'<span style="color:#d1d5db">—</span>';
+  let html=`<table class="tbl"><thead><tr><th>Kode</th><th>Risiko</th><th>Seksi</th><th>P26</th><th>R26</th><th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th><th>Status</th><th>Alasan Terakhir</th></tr></thead><tbody>`;
+  risks.forEach(r=>{
+    const entries={};
+    ['Q2','Q3','Q4'].forEach(q=>{ entries[q]=allEntries.find(x=>x.risk_id===r.id&&x.kuartal===q); });
+    const lastE=['Q4','Q3','Q2'].map(q=>entries[q]).find(e=>e?.status==='submitted');
+    const lastStatus=lastE?`<span class="tag-submitted">Submitted</span>`:entries['Q2']||entries['Q3']||entries['Q4']?`<span style="font-size:11px;color:#9ca3af">Draft</span>`:'<span style="color:#d1d5db;font-size:11px">—</span>';
+    html+=`<tr>
+      <td style="font-size:11px;font-weight:600;color:#6b7280;white-space:nowrap">${r.ind}</td>
+      <td style="max-width:180px;line-height:1.4">${r.nama}</td>
+      <td><span class="pill ${SEKSI_PILLS[r.seksi]}">${r.seksi}</span></td>
+      <td><span class="badge bp26">${r.p26}</span></td>
+      <td><span class="badge br26">${r.r26}</span></td>
+      <td>${sv(r.q1)}</td>
+      <td>${sv(entries['Q2']?.nilai_risiko)}${entries['Q2']?.frekuensi?`<div style="font-size:10px;color:#9ca3af">${entries['Q2'].frekuensi}×${entries['Q2'].dampak}</div>`:''}</td>
+      <td>${sv(entries['Q3']?.nilai_risiko)}${entries['Q3']?.frekuensi?`<div style="font-size:10px;color:#9ca3af">${entries['Q3'].frekuensi}×${entries['Q3'].dampak}</div>`:''}</td>
+      <td>${sv(entries['Q4']?.nilai_risiko)}${entries['Q4']?.frekuensi?`<div style="font-size:10px;color:#9ca3af">${entries['Q4'].frekuensi}×${entries['Q4'].dampak}</div>`:''}</td>
+      <td>${lastStatus}</td>
+      <td style="font-size:11px;max-width:160px;color:#374151;line-height:1.4">${lastE?.alasan||'—'}</td>
+    </tr>`;
+  });
+  html+='</tbody></table>';
+  document.getElementById('rekapTable').innerHTML=html;
+}
+
+// ===== ADMIN =====
+async function loadAdmin(){
+  await refreshData();
+  const qs=['Q1','Q2','Q3','Q4'];
+  document.getElementById('qStatusGrid').innerHTML=qs.map(q=>{
+    const info=qStatus[q];
+    const open=info?.is_open;
+    return `<div class="q-card ${open?'open':'closed'}">
+      <h3>${q}</h3>
+      <p style="font-size:12px;color:#6b7280;margin-bottom:12px">${{Q1:'Jan–Mar',Q2:'Apr–Jun',Q3:'Jul–Sep',Q4:'Okt–Des'}[q]} 2026</p>
+      <div style="margin-bottom:12px"><span class="status-dot ${open?'dot-open':'dot-closed'}"></span><span style="font-size:13px;font-weight:600;color:${open?'#166534':'#6b7280'}">${open?'TERBUKA':'DITUTUP'}</span></div>
+      ${open
+        ?`<button class="btn btn-danger btn-sm" style="width:100%" onclick="toggleQ('${q}',false)"><i class="ti ti-lock"></i> Tutup ${q}</button>`
+        :`<button class="btn btn-success btn-sm" style="width:100%" onclick="toggleQ('${q}',true)"><i class="ti ti-lock-open"></i> Buka ${q}</button>`}
+    </div>`;
+  }).join('');
+
+  const {data:logs}=await sb.from('submission_log').select('*').order('created_at',{ascending:false}).limit(20);
+  document.getElementById('activityLog').innerHTML=logs?.length
+    ?`<table class="tbl"><thead><tr><th>Waktu</th><th>User</th><th>Aksi</th><th>Detail</th></tr></thead><tbody>`+
+      logs.map(l=>`<tr><td style="white-space:nowrap">${new Date(l.created_at).toLocaleString('id-ID')}</td><td><b>${l.actor_name||'—'}</b></td><td><span class="badge ${l.action==='submit'?'bp26':l.action==='edit_reopen'?'bprev':'bq1'}">${l.action}</span></td><td style="font-size:11px;color:#6b7280">${l.new_values?.risk_id||''} ${l.new_values?.kuartal||''}</td></tr>`).join('')+
+      '</tbody></table>'
+    :'<div class="empty"><i class="ti ti-history"></i>Belum ada aktivitas</div>';
+}
+
+async function toggleQ(q, open){
+  const msg=open?`Buka ${q} untuk semua seksi?`:`Tutup ${q}? Seksi tidak bisa input lagi.`;
+  showModal(
+    (open?'Buka':'Tutup')+' Kuartal '+q,
+    msg,'',
+    `<button class="btn btn-gray" onclick="closeModal()">Batal</button>
+     <button class="btn ${open?'btn-success':'btn-danger'}" onclick="doToggleQ('${q}',${open})"><i class="ti ti-${open?'lock-open':'lock'}"></i> ${open?'Ya, Buka':'Ya, Tutup'}</button>`
+  );
+}
+async function doToggleQ(q, open){
+  closeModal();
+  const {error}=await sb.from('kuartal_status').update({is_open:open,[open?'opened_at':'closed_at']:new Date().toISOString(),opened_by:currentUser.id}).eq('kuartal',q);
+  if(error){ toast('Gagal: '+error.message,'err'); return; }
+  await sb.from('submission_log').insert({action:open?'open_q':'close_q',actor_id:currentUser.id,actor_name:currentUser.username,new_values:{kuartal:q}});
+  await refreshData(); toast(`${q} berhasil ${open?'dibuka':'ditutup'}`,'ok'); loadAdmin();
+}
+
+// ===== EXPORT =====
+function exportCSV(){
+  const rows=[['Kode','Risiko','Seksi','P26','R26','Q1','Q2_F','Q2_D','Q2_Nilai','Q2_Alasan','Q3_F','Q3_D','Q3_Nilai','Q3_Alasan','Q4_F','Q4_D','Q4_Nilai','Q4_Alasan']];
+  RISKS.forEach(r=>{
+    const eq=['Q2','Q3','Q4'].map(q=>{ const e=allEntries.find(x=>x.risk_id===r.id&&x.kuartal===q); return [e?.frekuensi||'',e?.dampak||'',e?.nilai_risiko||'',e?.alasan||'']; });
+    rows.push([r.ind,r.nama,r.seksi,r.p26,r.r26,r.q1,...eq.flat()]);
+  });
+  const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a'); a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv); a.download='RisikoKPPN_2026.csv'; a.click();
+  toast('CSV diunduh');
+}
+
+// ===== INIT =====
+document.getElementById('loginPage').style.display='flex';
+document.getElementById('appPage').style.display='none';
+</script>
+<style>@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}</style>
+</body>
+</html>
