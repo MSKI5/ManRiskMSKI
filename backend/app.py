@@ -49,7 +49,8 @@ def create_app():
     jwt.init_app(app)
     
     # 🚨 PERBAIKAN CORS: Batasi hanya menerima request dari domain frontend yang sah
-    allowed_origins = os.getenv('CORS_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000').split(',')
+    # allowed_origins = os.getenv('CORS_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,https://manriskmski.netlify.app').split(',')
+    allowed_origins = os.getenv('CORS_ORIGINS', 'https://manriskmski.netlify.app').split(',')
     CORS(app, resources={r"/api/*": {"origins": allowed_origins}}, supports_credentials=True)
     # CORS(app, resources={r"/api/*": {"origins": allowed_origins}}, supports_credentials=True)
 
