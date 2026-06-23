@@ -47,12 +47,16 @@ def create_app():
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
-    
+
+    # 🚨 PERBAIKAN CORS FINAL: Bersihkan string origin
+    # Ambil nilai dari env. Jika kosong, gunakan default Netlify
+    raw_origins = os.getenv('CORS_ORIGINS', 'https://manriskmski.netlify.app')
     # 🚨 PERBAIKAN CORS: Batasi hanya menerima request dari domain frontend yang sah
     # allowed_origins = os.getenv('CORS_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173,http://localhost:3000,https://manriskmski.netlify.app').split(',')
-    allowed_origins = os.getenv('CORS_ORIGINS', 'https://manriskmski.netlify.app').split(',')
-    CORS(app, resources={r"/api/*": {"origins": allowed_origins}}, supports_credentials=True)
+    # allowed_origins = os.getenv('CORS_ORIGINS', 'https://manriskmski.netlify.app').split(',')
+    allowed_origins = [origin.strip().rstrip('/') for origin in raw_origins.split(',')]
     # CORS(app, resources={r"/api/*": {"origins": allowed_origins}}, supports_credentials=True)
+    CORS(app, resources={r"/*": {"origins": allowed_origins}}, supports_credentials=True)
 
     @jwt.token_in_blocklist_loader
     def check_if_token_in_blacklist(jwt_header, jwt_payload):
