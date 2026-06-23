@@ -56,7 +56,7 @@ def create_app():
     # allowed_origins = os.getenv('CORS_ORIGINS', 'https://manriskmski.netlify.app').split(',')
     allowed_origins = [origin.strip().rstrip('/') for origin in raw_origins.split(',')]
     # CORS(app, resources={r"/api/*": {"origins": allowed_origins}}, supports_credentials=True)
-    CORS(app, resources={r"/*": {"origins": allowed_origins}}, supports_credentials=True)
+    # CORS(app, resources={r"/*": {"origins": allowed_origins}}, supports_credentials=True)
 
     @jwt.token_in_blocklist_loader
     def check_if_token_in_blacklist(jwt_header, jwt_payload):
