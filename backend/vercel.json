@@ -1,15 +1,8 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "index.py",
-      "use": "@vercel/python"
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "index.py": {
+      "excludeFiles": "{uploads/**,**/__pycache__/**,**/*.pyc,test_*.py,init_db.py,seed_data.py,fix_admin.py,cek_dokumen.py,.env}"
     }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/index.py"
-    }
-  ]
+  }
 }
