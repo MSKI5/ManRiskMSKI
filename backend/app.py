@@ -47,7 +47,7 @@ def create_app():
     
     # --- KONFIGURASI CORS PRODUKSI ---
     # Mengambil domain dari env atau default untuk keamanan
-    allowed_origins = os.getenv('CORS_ORIGINS', '[https://manriskmski.netlify.app](https://manriskmski.netlify.app)').split(',')
+    allowed_origins = [o.strip() for o in os.getenv('CORS_ORIGINS', 'https://manriskmski.netlify.app').split(',')]
     
     CORS(app, resources={
         r"/api/*": {
