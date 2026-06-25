@@ -47,26 +47,16 @@ def create_app():
     
     # --- KONFIGURASI CORS PRODUKSI ---
     # Mengambil domain dari env atau default untuk keamanan
-    # allowed_origins = os.getenv('CORS_ORIGINS', 'manriskmski.netlify.app').split(',')
+    allowed_origins = os.getenv('CORS_ORIGINS', 'manriskmski.netlify.app').split(',')
     
-    # CORS(app, resources={
-    #     r"/api/*": {
-    #         "origins": allowed_origins,
-    #         "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    #         "allow_headers": ["Content-Type", "Authorization"],
-    #         "supports_credentials": True
-    #     }
-    # })
-
-    # 🚨 PERBAIKAN CORS FINAL
-    raw_origins = os.getenv('CORS_ORIGINS', 'https://manriskmski.netlify.app')
-    
-    # Memaksa pembersihan spasi dan garis miring agar 100% cocok dengan Browser
-    allowed_origins = [origin.strip().rstrip('/') for origin in raw_origins.split(',')]
-    
-    # Memperluas cakupan CORS ke seluruh aplikasi (r"/*")
-    CORS(app, resources={r"/*": {"origins": allowed_origins}}, supports_credentials=True)
-
+    CORS(app, resources={
+        r"/api/*": {
+            "origins": allowed_origins,
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"],
+            "supports_credentials": True
+        }
+    })
 
     # Penanganan Preflight Request (Sangat penting untuk Vercel)
     @app.before_request
