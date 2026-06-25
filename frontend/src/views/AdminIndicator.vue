@@ -1,21 +1,21 @@
 <template>
   <div class="p-6 mx-auto space-y-8 max-w-7xl">
     
-    <div class="flex flex-col gap-4 p-6 bg-white border border-gray-100 shadow-sm md:flex-row md:items-center justify-between rounded-xl">
+    <div class="flex flex-col justify-between gap-4 p-6 bg-white border border-gray-100 shadow-sm md:flex-row md:items-center rounded-xl">
       <div>
         <h2 class="text-2xl font-bold tracking-tight text-gray-900 md:text-3xl">Kelola Data Indikator (Admin)</h2>
         <p class="mt-1 text-sm text-gray-500">
           Manajemen (CRUD) master data indikator beserta penetapan nilai awal P26 & R26.
         </p>
       </div>
-      <button @click="openModal()" class="px-4 py-2 text-sm font-semibold text-white transition bg-blue-600 rounded-lg shadow-sm whitespace-nowrap hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 outline-none">
+      <button @click="openModal()" class="px-4 py-2 text-sm font-semibold text-white transition bg-blue-600 rounded-lg shadow-sm outline-none whitespace-nowrap hover:bg-blue-700 focus:ring-2 focus:ring-blue-500">
         + Tambah Indikator Baru
       </button>
     </div>
 
     <div class="overflow-x-auto bg-white border border-gray-100 shadow-sm rounded-xl">
       <table class="w-full text-sm text-left text-gray-600 whitespace-nowrap">
-        <thead class="bg-gray-50 border-b border-gray-200">
+        <thead class="border-b border-gray-200 bg-gray-50">
           <tr>
             <th class="px-6 py-4 font-semibold text-gray-900">Kode</th>
             <th class="px-6 py-4 font-semibold text-gray-900">Nama Indikator</th>
@@ -28,7 +28,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="item in indicators" :key="item?.id" class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+          <tr v-for="item in indicators" :key="item?.id" class="transition-colors border-b border-gray-100 hover:bg-gray-50">
             <td class="px-6 py-4 font-medium text-gray-900">{{ item?.indicator_code }}</td>
             <td class="px-6 py-4 truncate max-w-[200px]" :title="item?.indicator_name">{{ item?.indicator_name }}</td>
             <td class="px-6 py-4">{{ item?.indicator_type || '-' }}</td>

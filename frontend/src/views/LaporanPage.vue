@@ -35,25 +35,25 @@
         <button @click="downloadExport('excel')" :disabled="isLoading" class="flex flex-col items-center justify-center p-6 transition border border-green-200 rounded-xl bg-green-50 hover:bg-green-100 disabled:opacity-50">
           <span class="mb-2 text-4xl">📊</span>
           <span class="font-bold text-green-800">Ekspor Excel (.xlsx)</span>
-          <span class="text-xs text-green-600 mt-1">Data lengkap seluruh kolom</span>
+          <span class="mt-1 text-xs text-green-600">Data lengkap seluruh kolom</span>
         </button>
 
         <button @click="downloadExport('csv')" :disabled="isLoading" class="flex flex-col items-center justify-center p-6 transition border border-gray-200 rounded-xl bg-gray-50 hover:bg-gray-100 disabled:opacity-50">
           <span class="mb-2 text-4xl">📝</span>
           <span class="font-bold text-gray-800">Ekspor CSV (.csv)</span>
-          <span class="text-xs text-gray-500 mt-1">Untuk diproses ke sistem lain</span>
+          <span class="mt-1 text-xs text-gray-500">Untuk diproses ke sistem lain</span>
         </button>
 
         <button @click="downloadExport('pdf')" :disabled="isLoading" class="flex flex-col items-center justify-center p-6 transition border border-red-200 rounded-xl bg-red-50 hover:bg-red-100 disabled:opacity-50">
           <span class="mb-2 text-4xl">📄</span>
           <span class="font-bold text-red-800">Cetak PDF (.pdf)</span>
-          <span class="text-xs text-red-600 mt-1">Format laporan cetak A4</span>
+          <span class="mt-1 text-xs text-red-600">Format laporan cetak A4</span>
         </button>
 
         <button @click="downloadExport('zip')" :disabled="isLoading" class="flex flex-col items-center justify-center p-6 transition border border-blue-200 rounded-xl bg-blue-50 hover:bg-blue-100 disabled:opacity-50">
           <span class="mb-2 text-4xl">🗂️</span>
           <span class="font-bold text-blue-800">Unduh Bukti (ZIP)</span>
-          <span class="text-xs text-center text-blue-600 mt-1">Mengunduh semua file PDF/Foto dalam folder per seksi</span>
+          <span class="mt-1 text-xs text-center text-blue-600">Mengunduh semua file PDF/Foto dalam folder per seksi</span>
         </button>
 
       </div>

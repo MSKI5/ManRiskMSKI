@@ -1,8 +1,16 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "functions": {
-    "index.py": {
-      "excludeFiles": "{uploads/**,**/__pycache__/**,**/*.pyc,test_*.py,init_db.py,seed_data.py,fix_admin.py,cek_dokumen.py,.env}"
+  "version": 2,
+  "builds": [
+    {
+      "src": "app.py",
+      "use": "@vercel/python"
     }
-  }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "app.py"
+    }
+  ],
+  "installCommand": "pip install -r requirements.txt"
 }
